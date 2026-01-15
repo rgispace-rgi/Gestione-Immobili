@@ -1,1 +1,1651 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestione Stati Immobili</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            font-weight: 600;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            line-height: 1;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .btn-header {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid white;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .btn-header:hover {
+            background: white;
+            color: #1a1a2e;
+        }
+
+        /* Zone Tabs */
+        .zone-tabs {
+            display: flex;
+            background: #f5f5f5;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .zone-tab {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            background: #e0e0e0;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #666;
+        }
+
+        .zone-tab:first-child {
+            border-right: 1px solid #ccc;
+        }
+
+        .zone-tab:hover {
+            background: #d0d0d0;
+        }
+
+        .zone-tab.active {
+            background: white;
+            color: #1a1a2e;
+            border-bottom: 3px solid #1a1a2e;
+        }
+
+        /* Search */
+        .search-container {
+            padding: 15px;
+            background: white;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 45px 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+            transition: all 0.3s;
+            outline: none;
+        }
+
+        .search-input:focus {
+            border-color: #1a1a2e;
+            box-shadow: 0 0 0 3px rgba(26, 26, 46, 0.1);
+        }
+
+        .clear-search {
+            position: absolute;
+            right: 25px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #e0e0e0;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            font-size: 24px;
+            line-height: 1;
+            cursor: pointer;
+            color: #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .clear-search:hover {
+            background: #d0d0d0;
+            color: #333;
+        }
+
+        /* Lista Immobili */
+        .immobili-list {
+            padding: 15px;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .group-header {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a1a2e;
+            padding: 12px 10px 8px;
+            margin-top: 10px;
+            border-bottom: 3px solid #1a1a2e;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .group-header:first-child {
+            margin-top: 0;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .section-header:first-child {
+            margin-top: 0;
+        }
+
+        .section-header.non-affittati {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            color: #e65100;
+            border: 2px solid #ff9800;
+        }
+
+        .section-header.affittati {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            color: #2e7d32;
+            border: 2px solid #4CAF50;
+        }
+
+        .section-count {
+            background: rgba(0,0,0,0.15);
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 14px;
+        }
+
+        .group-icon {
+            font-size: 24px;
+        }
+
+        .immobile-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 5px solid;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .immobile-card-content {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1;
+        }
+
+        .stato-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .stato-data {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .stato-durata {
+            font-size: 13px;
+            font-weight: 600;
+            color: #e65100;
+        }
+
+        .immobile-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .immobile-card.affittato {
+            border-left-color: #4CAF50;
+            background: #f1f8f4;
+        }
+
+        .immobile-card.libero {
+            border-left-color: #f44336;
+            background: #ffebee;
+        }
+
+        .immobile-card.prenotato {
+            border-left-color: #ff9800;
+            background: #fff3e0;
+        }
+
+        .immobile-card.in-consegna {
+            border-left-color: #2196F3;
+            background: #e3f2fd;
+        }
+
+        .immobile-card.pendente {
+            border-left-color: #9c27b0;
+            background: #f3e5f5;
+        }
+
+        .immobile-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .status-badge.affittato {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .status-badge.libero {
+            background: #f44336;
+            color: white;
+        }
+
+        .status-badge.prenotato {
+            background: #ff9800;
+            color: white;
+        }
+
+        .status-badge.in-consegna {
+            background: #2196F3;
+            color: white;
+        }
+
+        .status-badge.pendente {
+            background: #9c27b0;
+            color: white;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            max-width: 90%;
+            width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translate(-50%, -40%);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, -50%);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 15px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #999;
+            line-height: 1;
+        }
+
+        .close-btn:hover {
+            color: #333;
+        }
+
+        .detail-row {
+            margin-bottom: 15px;
+        }
+
+        .detail-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .detail-value {
+            font-size: 18px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .detail-value.durata-highlight {
+            color: #e65100;
+            font-weight: 700;
+        }
+
+        .current-status {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .current-status.affittato { background: #4CAF50; }
+        .current-status.libero { background: #f44336; }
+        .current-status.prenotato { background: #ff9800; }
+        .current-status.in-consegna { background: #2196F3; }
+        .current-status.pendente { background: #9c27b0; }
+
+        .btn-update-status {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+
+        .btn-update-status:hover {
+            transform: scale(1.02);
+            box-shadow: 0 6px 20px rgba(26, 26, 46, 0.4);
+        }
+
+        .status-options {
+            display: none;
+            margin-top: 15px;
+            border-top: 2px solid #eee;
+            padding-top: 15px;
+        }
+
+        .status-options.show {
+            display: block;
+        }
+
+        .status-option {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 3px solid;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-option:hover {
+            transform: scale(1.02);
+        }
+
+        .status-option.affittato {
+            background: #f1f8f4;
+            border-color: #4CAF50;
+            color: #2e7d32;
+        }
+
+        .status-option.libero {
+            background: #ffebee;
+            border-color: #f44336;
+            color: #c62828;
+        }
+
+        .status-option.prenotato {
+            background: #fff3e0;
+            border-color: #ff9800;
+            color: #e65100;
+        }
+
+        .status-option.in-consegna {
+            background: #e3f2fd;
+            border-color: #2196F3;
+            color: #1565c0;
+        }
+
+        .status-option.pendente {
+            background: #f3e5f5;
+            border-color: #9c27b0;
+            color: #7b1fa2;
+        }
+
+        .status-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+        }
+
+        .status-icon.affittato { background: #4CAF50; }
+        .status-icon.libero { background: #f44336; }
+        .status-icon.prenotato { background: #ff9800; }
+        .status-icon.in-consegna { background: #2196F3; }
+        .status-icon.pendente { background: #9c27b0; }
+
+        /* Registro Modal */
+        .registro-list {
+            max-height: 60vh;
+            overflow-y: auto;
+            padding: 5px;
+        }
+
+        .registro-item {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-left: 5px solid #1a1a2e;
+        }
+
+        .registro-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .registro-immobile {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .registro-zona {
+            font-size: 12px;
+            font-weight: 500;
+            color: #666;
+            background: #f0f0f0;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        .registro-data {
+            font-size: 12px;
+            color: #666;
+            background: rgba(0,0,0,0.05);
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .registro-cambio {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+
+        .registro-stato {
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .registro-stato.affittato { background: #4CAF50; }
+        .registro-stato.libero { background: #f44336; }
+        .registro-stato.prenotato { background: #ff9800; }
+        .registro-stato.in-consegna { background: #2196F3; }
+        .registro-stato.pendente { background: #9c27b0; }
+
+        .registro-arrow {
+            font-size: 18px;
+            color: #666;
+        }
+
+        .registro-footer {
+            padding: 15px;
+            border-top: 2px solid #eee;
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .btn-init-google {
+            background: #f5f5f5;
+            border: 2px solid #ddd;
+            color: #666;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-init-google:hover {
+            background: #e0e0e0;
+            border-color: #bbb;
+            color: #333;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .empty-state svg {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 15px;
+            opacity: 0.3;
+        }
+
+        /* Statistiche */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 10px 5px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .stat-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .stat-item.active {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .stat-item.active.affittato { border-color: #4CAF50; }
+        .stat-item.active.libero { border-color: #f44336; }
+        .stat-item.active.prenotato { border-color: #ff9800; }
+        .stat-item.active.in-consegna { border-color: #2196F3; }
+        .stat-item.active.pendente { border-color: #9c27b0; }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: #666;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        .stat-item.affittato .stat-number { color: #4CAF50; }
+        .stat-item.libero .stat-number { color: #f44336; }
+        .stat-item.prenotato .stat-number { color: #ff9800; }
+        .stat-item.in-consegna .stat-number { color: #2196F3; }
+        .stat-item.pendente .stat-number { color: #9c27b0; }
+
+        /* Sync Feedback */
+        .sync-feedback {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 20px;
+            padding: 30px 40px;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.3);
+            z-index: 10000;
+            text-align: center;
+            display: none;
+            animation: popIn 0.3s ease;
+            border: 3px solid #4CAF50;
+        }
+
+        .sync-feedback.show {
+            display: block;
+        }
+
+        @keyframes popIn {
+            from { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+            to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        .sync-feedback .icon {
+            width: 70px;
+            height: 70px;
+            background: #4CAF50;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 40px;
+        }
+
+        .sync-feedback .message {
+            font-size: 18px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 14px;
+            }
+
+            .header h1 div:first-child {
+                font-size: 28px !important;
+            }
+
+            .btn-header {
+                padding: 8px 12px;
+                font-size: 14px;
+            }
+
+            .stats-container {
+                grid-template-columns: repeat(5, 1fr);
+                gap: 5px;
+                padding: 10px;
+            }
+
+            .stat-item {
+                padding: 8px 3px;
+            }
+
+            .stat-number {
+                font-size: 18px;
+            }
+
+            .stat-label {
+                font-size: 8px;
+            }
+
+            .non-affittate-item {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+
+            .immobile-name {
+                font-size: 14px;
+            }
+
+            .status-badge {
+                font-size: 10px;
+                padding: 5px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                <div style="font-size: 32px;">🏢</div>
+                <div style="font-size: 16px; line-height: 1.2;">Gestione</div>
+                <div style="font-size: 16px; line-height: 1.2;">Stati Immobili</div>
+            </h1>
+            <div class="header-buttons">
+                <button class="btn-header" onclick="syncAndLoad()" title="Sincronizza e Aggiorna">🔄</button>
+                <button class="btn-header" onclick="openRegistro()">📋</button>
+            </div>
+        </div>
+
+        <!-- Tab Zone -->
+        <div class="zone-tabs">
+            <button class="zone-tab active" id="tabTucidide" onclick="switchZona('tucidide')">
+                🏭 Tucidide
+            </button>
+            <button class="zone-tab" id="tabMalaga" onclick="switchZona('malaga')">
+                🌴 Malaga
+            </button>
+        </div>
+
+        <!-- Statistiche -->
+        <div class="stats-container">
+            <div class="stat-item affittato" onclick="filterByStato('affittato')">
+                <div class="stat-number" id="statAffittato">0</div>
+                <div class="stat-label">Affittati</div>
+            </div>
+            <div class="stat-item libero" onclick="filterByStato('libero')">
+                <div class="stat-number" id="statLibero">0</div>
+                <div class="stat-label">Liberi</div>
+            </div>
+            <div class="stat-item prenotato" onclick="filterByStato('prenotato')">
+                <div class="stat-number" id="statPrenotato">0</div>
+                <div class="stat-label">Prenotati</div>
+            </div>
+            <div class="stat-item in-consegna" onclick="filterByStato('in-consegna')">
+                <div class="stat-number" id="statInConsegna">0</div>
+                <div class="stat-label">In Consegna</div>
+            </div>
+            <div class="stat-item pendente" onclick="filterByStato('pendente')">
+                <div class="stat-number" id="statPendente">0</div>
+                <div class="stat-label">Pendenti</div>
+            </div>
+        </div>
+
+
+
+        <!-- Ricerca -->
+        <div class="search-container">
+            <input type="text" id="searchInput" class="search-input" placeholder="🔍 Cerca immobile..." onkeyup="filterImmobili()" oninput="toggleClearButton()">
+            <button class="clear-search" id="clearSearchBtn" onclick="clearSearch()" style="display: none;">&times;</button>
+        </div>
+
+        <!-- Lista Immobili -->
+        <div class="immobili-list" id="immobiliList">
+            <!-- Immobili inseriti qui -->
+        </div>
+    </div>
+
+    <!-- Modal Dettaglio -->
+    <div class="modal" id="detailModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Dettaglio Immobile</h2>
+                <button class="close-btn" onclick="closeModal('detailModal')">&times;</button>
+            </div>
+            <div id="modalBody">
+                <!-- Dettagli -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Registro -->
+    <div class="modal" id="registroModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">📋 Registro Modifiche</h2>
+                <button class="close-btn" onclick="closeModal('registroModal')">&times;</button>
+            </div>
+            <div class="registro-list" id="registroList">
+                <!-- Eventi registro -->
+            </div>
+            <div class="registro-footer">
+                <button class="btn-init-google" onclick="initGoogleSheets()">⚙️ Inizializza Google Sheets</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sync Feedback -->
+    <div class="sync-feedback" id="syncFeedback">
+        <div class="icon">✅</div>
+        <div class="message">Stato aggiornato!</div>
+    </div>
+
+    <script>
+        // ============================================
+        // GOOGLE SHEETS API
+        // ============================================
+        
+        // IMPORTANTE: Sostituisci con l'URL del tuo Web App
+        const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbx1sTJD6rBNLEIxnUCvRgPCbRkn4ebH8YiVn7FDbVbZY8VNEgkHwZ8pk9Rfz5J_P1ay/exec';
+        
+        const DATA_VERSION = 6;
+        
+        // Stati disponibili
+        const STATI = {
+            affittato: { label: 'Affittato', icon: '✅', color: '#4CAF50' },
+            libero: { label: 'Libero', icon: '🔴', color: '#f44336' },
+            prenotato: { label: 'Prenotato', icon: '🟠', color: '#ff9800' },
+            'in-consegna': { label: 'In Consegna', icon: '🔵', color: '#2196F3' },
+            pendente: { label: 'Pendente', icon: '🟣', color: '#9c27b0' }
+        };
+
+        // Zone con i loro gruppi
+        const ZONE = {
+            tucidide: {
+                nome: 'Tucidide',
+                icon: '🏭',
+                gruppi: [
+                    { nome: 'Store', icon: '🍽', items: ['1', '2', '3', '4', '5'] },
+                    { nome: 'Mensa', icon: '🍽', items: ['1', '2', '3', '4'] },
+                    { nome: 'Silos', icon: '🏗', range: [1, 24] },
+                    { nome: 'Supercondor', icon: '🦅', range: [1, 9] },
+                    { nome: 'Minicondor', icon: '🦉', range: [1, 9] },
+                    { nome: 'Stazione', icon: '🚉', items: ['13', '21', '32', '33', '36', '37', '38', '40', '42', '46', '48', '49', '50', 'Salame Azzurro'] },
+                    { nome: 'Palazina', icon: '🚉', items: ['PT', 'P1', 'P2', 'P3', 'P4', 'P Mansarde'] },
+                    { nome: 'Fabbrica', icon: '🏭', range: [1, 18] },
+                    { nome: 'Decorazione', icon: '🎨', range: [1, 14] },
+                    { nome: 'Stoccaggio', icon: '📦', items: ['7', '9', '31', '33', '50', '51', '52', '53', '54', '73', '74', '75'] },
+                    { nome: 'Forgiatura', icon: '🔨', range: [1, 23] },
+                    { nome: 'Artigiani', icon: '👷', items: ['16', '20', '24', '28', '36', '40'] },
+                    { nome: 'Capannina', icon: '🏠', items: ['30-1', '30-2', '31', '32.1', '32-2', '33', '50', '51', '54/1', '72', '73'] },
+                    { nome: 'Autogrill', icon: '☕', items: [''] },
+                    { nome: 'Stampaggio', icon: '⚙', items: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '16', '17', '18', '19', '20', '21'] },
+                    { nome: 'Residence', icon: '🏘', items: ['1', '2', '3', '4'] },
+                    { nome: 'Mansarda', icon: '🏘', items: ['1', '2', '3', '4'] },
+                    { nome: 'Villone', icon: '🏡', items: ['1', '2'] },
+                    { nome: 'Montaggio', icon: '🔩', items: ['1', '2', '3', '4', '5', '8', '9', '10', '11', '12', '15', '16', '17', '18', '19', '20', '21', '22'] },
+                    { nome: 'Essiccatura', icon: '🌬', items: ['1', '2', '3', '4', '5', '8', '9', '10', '11', '22', '24'] },
+                    { nome: 'Cottura', icon: '🔥', range: [1, 8] },
+                    { nome: 'Extra Mini', icon: '⚡', range: [1, 9] },
+                    { nome: 'Extra Super', icon: '⚡', range: [1, 9] },
+                    { nome: 'Museo', icon: '🖼', range: [1, 12] },
+                    { nome: 'Vistamare', icon: '🌊', range: [1, 10] },
+                    { nome: 'Montacarichi', icon: '🛗', range: [1, 13] },
+                    { nome: 'C.A.', icon: '🔌', items: [''] },
+                    { nome: 'Ocean Drive', icon: '🌅', range: [1, 13] },
+                    { nome: 'Scaletta', icon: '🪜', range: [1, 26] },
+                    { nome: 'Attico', icon: '🏙', range: [1, 6] },
+                    { nome: 'Shed P1', icon: '🏚', items: ['1E', '2E', '3E', '4E', '5E', '6E', '7E', '8E', '9E', '10E', '11E', '12E', '13E', '14E', '15E', '16E', '17E', '18E', '19E', '20E', '21E', '22E', '23E', '24E', '25E', '26E', '27E', '28E', '29E', '30E', '1C', '2C', '3C', '4C', '5C', '6C', '7C', '8C', '9C', '10C', '11C', '12C', '13C', '14C', '15C', '16C', '17C', '18C', '19C', '20C', '21C', '22C', '23C', '24C', '25C', '26C', '27C', '28C', '29C'] },
+                    { nome: 'Shed', icon: '🏚', items: ['1E', '2E', '3E', '4E', '5E', '6E', '7E', '11C', '12C', '13C', '14C', '15C', '16C', '17C', '18C', '19C', '20C', '21C', '22C', '23C', '24C', '25C'] },
+                    { nome: 'LungaMarcia', icon: '🏗', range: [1, 19] },
+                    { nome: 'Mergellina', icon: '🌴', range: [1, 56] },
+                    { nome: 'Beach', icon: '🏝', range: [1, 23] },
+                    { nome: 'Mansarda Beach', icon: '🏖', range: [1, 6] }
+                ]
+            },
+            malaga: {
+                nome: 'Malaga',
+                icon: '🌴',
+                gruppi: [
+                    { nome: 'Unità', icon: '📦', items: ['1', '2', '3', '4', '5', '6', '9', '10', '12', '13', '14', '15', '16', '17', '23', '27', '31', '33', '35', '36', '42', '43', '48', '49', '50', '51', '56', '57', '58', '59', '60', '61', '62', '63', '64', '65', '66', '67', '70', '72', '74', '76', '77', '78', '79', '80', '82', '85', '86', '87', '88', '89', '90', '91', '117', '118', '119', '120', '125', '139'] },
+                    { nome: 'Mansarda', icon: '🏠', items: ['1A', '2A', '3A', '4A', '5A', '6A', '7A', '8A', '1B', '2B', '3B', '4B'] },
+                    { nome: 'Torre', icon: '🗼', range: [1, 10] },
+                    { nome: 'Superleone', icon: '🦁', items: ['1', '2'] },
+                    { nome: 'Squat', icon: '🏋️', range: [1, 18] },
+                    { nome: 'Drive-in', icon: '🚗', range: [1, 8] },
+                    { nome: 'Sub.', icon: '📦', items: ['956'] },
+                    { nome: 'Risto Vigevano', icon: '🍽', items: [''] },
+                    { nome: 'BAR', icon: '🍽', items: [''] },
+                    { nome: 'Bilo Vigevano', icon: '🏠', items: [''] },
+                    { nome: 'Spartaco', icon: '🏠', items: ['9'] },
+                    { nome: 'Assunta', icon: '🏪', items: ['NEGOZIO', 'Fienile 1', 'Suite 2', 'Torrettina 3', 'Suitina 4', 'Fienile 5'] },
+                    { nome: 'Box – ByPass', icon: '🚘', range: [1, 8] },
+                    { nome: 'Spazio – ByPass', icon: '📐', items: ['10', '11', '12', '13', '14'] },
+                    { nome: 'Sinergit', icon: '🤝', range: [1, 12] }
+                ]
+            }
+        };
+
+        let immobili = [];
+        let registro = [];
+        let currentEditId = null;
+        let currentZona = 'tucidide';
+        let currentStatoFilter = null;
+
+        // ============================================
+        // INIZIALIZZAZIONE
+        // ============================================
+        
+        function initImmobili() {
+            const savedVersion = localStorage.getItem('immobili_version');
+            const savedData = localStorage.getItem('immobili');
+            const savedRegistro = localStorage.getItem('immobili_registro');
+            
+            if (savedData && parseInt(savedVersion) === DATA_VERSION) {
+                immobili = JSON.parse(savedData);
+                registro = savedRegistro ? JSON.parse(savedRegistro) : [];
+            } else {
+                // Genera immobili iniziali per tutte le zone (fallback locale)
+                immobili = [];
+                let id = 1;
+                const now = new Date().toISOString();
+                
+                Object.keys(ZONE).forEach(zonaKey => {
+                    const zona = ZONE[zonaKey];
+                    zona.gruppi.forEach(gruppo => {
+                        const unitaList = getGruppoUnita(gruppo);
+                        unitaList.forEach(unita => {
+                            // Per unità singole (items: ['']) usa solo il nome del gruppo
+                            const nomeCompleto = unita === '' ? gruppo.nome : `${gruppo.nome} ${unita}`;
+                            immobili.push({
+                                id: `${zonaKey}_${id}`,
+                                nome: nomeCompleto,
+                                gruppo: gruppo.nome,
+                                zona: zonaKey,
+                                stato: 'affittato',
+                                statoData: now
+                            });
+                            id++;
+                        });
+                    });
+                });
+                
+                registro = [];
+                saveData();
+            }
+        }
+
+        // Genera lista unità da un gruppo (supporta range e items)
+        function getGruppoUnita(gruppo) {
+            if (gruppo.range) {
+                const [start, end] = gruppo.range;
+                const items = [];
+                for (let i = start; i <= end; i++) {
+                    items.push(i.toString());
+                }
+                return items;
+            } else if (gruppo.items) {
+                return gruppo.items;
+            } else if (gruppo.count) {
+                // Fallback per compatibilità
+                const items = [];
+                for (let i = 1; i <= gruppo.count; i++) {
+                    items.push(i.toString());
+                }
+                return items;
+            }
+            return [];
+        }
+
+        // Inizializza immobili su Google Sheets
+        async function initGoogleSheets() {
+            if (!confirm('Vuoi inizializzare Google Sheets con tutti gli immobili?\n\nATTENZIONE: Questo sovrascriverà i dati esistenti!')) {
+                return;
+            }
+            
+            try {
+                showLoading(true);
+                const response = await fetch(`${WEBAPP_URL}?action=initAll`);
+                const result = await response.json();
+                
+                if (result && result.success) {
+                    showLoading(false);
+                    showFeedback('Google Sheets inizializzato!');
+                    await loadFromGoogle();
+                } else {
+                    showLoading(false);
+                    showFeedback('Errore inizializzazione', true);
+                }
+            } catch (error) {
+                console.error('Errore init Google:', error);
+                showLoading(false);
+                showFeedback('Errore di connessione', true);
+            }
+        }
+
+        // Calcola durata da una data
+        function calcolaDurata(dataISO) {
+            if (!dataISO) return null;
+            
+            const dataStato = new Date(dataISO);
+            const oggi = new Date();
+            
+            let anni = oggi.getFullYear() - dataStato.getFullYear();
+            let mesi = oggi.getMonth() - dataStato.getMonth();
+            let giorni = oggi.getDate() - dataStato.getDate();
+            
+            // Aggiusta giorni negativi
+            if (giorni < 0) {
+                mesi--;
+                const mesePrec = new Date(oggi.getFullYear(), oggi.getMonth(), 0);
+                giorni += mesePrec.getDate();
+            }
+            
+            // Aggiusta mesi negativi
+            if (mesi < 0) {
+                anni--;
+                mesi += 12;
+            }
+            
+            // Costruisci stringa
+            let parti = [];
+            if (anni > 0) {
+                parti.push(`${anni} ${anni === 1 ? 'anno' : 'anni'}`);
+            }
+            if (mesi > 0) {
+                parti.push(`${mesi} ${mesi === 1 ? 'mese' : 'mesi'}`);
+            }
+            if (giorni > 0 || parti.length === 0) {
+                parti.push(`${giorni} ${giorni === 1 ? 'giorno' : 'giorni'}`);
+            }
+            
+            return parti.join(' e ');
+        }
+
+        // Formatta data in italiano
+        function formatDataItaliana(dataISO) {
+            if (!dataISO) return 'N/D';
+            const data = new Date(dataISO);
+            const giorno = data.getDate();
+            const mese = ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'][data.getMonth()];
+            const anno = data.getFullYear();
+            return `${giorno} ${mese} ${anno}`;
+        }
+
+        // Sincronizza e carica dati
+        async function syncAndLoad() {
+            try {
+                showLoading(true);
+                
+                // 1. Prima sincronizza i due sheet
+                console.log('🔄 Sincronizzazione Consegne...');
+                const syncResponse = await fetch(`${WEBAPP_URL}?action=syncConsegne`);
+                const syncResult = await syncResponse.json();
+                
+                if (syncResult && syncResult.success) {
+                    if (syncResult.aggiornati > 0) {
+                        console.log(`✅ Sincronizzati ${syncResult.aggiornati} immobili`);
+                    }
+                }
+                
+                // 2. Poi carica tutti i dati
+                console.log('📥 Caricamento dati...');
+                const dataResponse = await fetch(`${WEBAPP_URL}?action=getAllData`);
+                const dataResult = await dataResponse.json();
+                
+                if (dataResult && dataResult.success) {
+                    if (dataResult.immobili && dataResult.immobili.length > 0) {
+                        immobili = dataResult.immobili;
+                    }
+                    if (dataResult.registro) {
+                        registro = dataResult.registro;
+                    }
+                    
+                    saveData();
+                    renderAll();
+                    showLoading(false);
+                    
+                    // Mostra messaggio appropriato
+                    if (syncResult && syncResult.aggiornati > 0) {
+                        showFeedback(`Sincronizzati ${syncResult.aggiornati} immobili!`);
+                    } else {
+                        showFeedback('Dati aggiornati!');
+                    }
+                    
+                    console.log('✅ Dati caricati:', immobili.length, 'immobili');
+                    return true;
+                } else {
+                    console.error('Errore caricamento:', dataResult);
+                    showLoading(false);
+                    showFeedback('Errore caricamento', true);
+                    return false;
+                }
+            } catch (error) {
+                console.error('Errore:', error);
+                showLoading(false);
+                showFeedback('Errore di connessione', true);
+                return false;
+            }
+        }
+
+        function showLoading(show) {
+            document.body.style.cursor = show ? 'wait' : 'default';
+        }
+
+        function saveData() {
+            localStorage.setItem('immobili', JSON.stringify(immobili));
+            localStorage.setItem('immobili_registro', JSON.stringify(registro));
+            localStorage.setItem('immobili_version', DATA_VERSION);
+        }
+
+        // ============================================
+        // RENDERING
+        // ============================================
+        
+        function renderAll() {
+            renderStats();
+            renderImmobili();
+        }
+
+        function renderStats() {
+            const stats = {
+                affittato: 0,
+                libero: 0,
+                prenotato: 0,
+                'in-consegna': 0,
+                pendente: 0
+            };
+            
+            // Filtra per zona corrente
+            immobili.filter(i => i.zona === currentZona).forEach(i => stats[i.stato]++);
+            
+            document.getElementById('statAffittato').textContent = stats.affittato;
+            document.getElementById('statLibero').textContent = stats.libero;
+            document.getElementById('statPrenotato').textContent = stats.prenotato;
+            document.getElementById('statInConsegna').textContent = stats['in-consegna'];
+            document.getElementById('statPendente').textContent = stats.pendente;
+        }
+
+        function renderImmobili(filteredList = null) {
+            const list = document.getElementById('immobiliList');
+            const zonaCorrente = ZONE[currentZona];
+            
+            // Filtra per zona corrente se non è già filtrata
+            let dataToRender = filteredList || immobili.filter(i => i.zona === currentZona);
+            
+            if (dataToRender.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                        <p>Nessun immobile trovato</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Ordine stati: libero, in-consegna, pendente, prenotato, affittato
+            const statoOrder = {
+                'libero': 1,
+                'in-consegna': 2,
+                'pendente': 3,
+                'prenotato': 4,
+                'affittato': 5
+            };
+            
+            // Costruisci mappa ordine gruppi per zona corrente
+            const gruppoOrderMap = {};
+            zonaCorrente.gruppi.forEach((g, idx) => gruppoOrderMap[g.nome] = idx + 1);
+            
+            // Ordina: prima per stato, poi per gruppo, poi per numero
+            const sorted = [...dataToRender].sort((a, b) => {
+                // Prima per stato
+                if (statoOrder[a.stato] !== statoOrder[b.stato]) {
+                    return statoOrder[a.stato] - statoOrder[b.stato];
+                }
+                // Poi per gruppo
+                if (gruppoOrderMap[a.gruppo] !== gruppoOrderMap[b.gruppo]) {
+                    return gruppoOrderMap[a.gruppo] - gruppoOrderMap[b.gruppo];
+                }
+                // Infine per numero
+                const numA = parseInt(a.nome.split(' ')[1]);
+                const numB = parseInt(b.nome.split(' ')[1]);
+                return numA - numB;
+            });
+            
+            let html = '';
+            let showedAffittatiDivider = false;
+            let showedNonAffittatiHeader = false;
+            
+            // Conta non affittati
+            const nonAffittatiCount = sorted.filter(i => i.stato !== 'affittato').length;
+            const affittatiCount = sorted.filter(i => i.stato === 'affittato').length;
+            
+            sorted.forEach(immobile => {
+                // Header "Unità Non Affittate" all'inizio se ci sono
+                if (!showedNonAffittatiHeader && immobile.stato !== 'affittato' && nonAffittatiCount > 0) {
+                    showedNonAffittatiHeader = true;
+                    html += `
+                        <div class="section-header non-affittati">
+                            <span>⚠️ Unità Non Affittate</span>
+                            <span class="section-count">${nonAffittatiCount}</span>
+                        </div>
+                    `;
+                }
+                
+                // Divisore prima degli affittati
+                if (!showedAffittatiDivider && immobile.stato === 'affittato') {
+                    showedAffittatiDivider = true;
+                    html += `
+                        <div class="section-header affittati">
+                            <span>✅ Unità Affittate</span>
+                            <span class="section-count">${affittatiCount}</span>
+                        </div>
+                    `;
+                }
+                
+                // Per le unità NON affittate, mostra anche data e durata
+                let infoStatoHtml = '';
+                if (immobile.stato !== 'affittato' && immobile.statoData) {
+                    const durata = calcolaDurata(immobile.statoData);
+                    const dataFormattata = formatDataItaliana(immobile.statoData);
+                    infoStatoHtml = `
+                        <div class="stato-info">
+                            <span class="stato-data">dal ${dataFormattata}</span>
+                            <span class="stato-durata">da ${durata}</span>
+                        </div>
+                    `;
+                }
+                
+                html += `
+                    <div class="immobile-card ${immobile.stato}" onclick="showDetails('${immobile.id}')">
+                        <div class="immobile-card-content">
+                            <span class="immobile-name">${immobile.nome}</span>
+                            ${infoStatoHtml}
+                        </div>
+                        <span class="status-badge ${immobile.stato}">${STATI[immobile.stato].icon} ${STATI[immobile.stato].label}</span>
+                    </div>
+                `;
+            });
+            
+            list.innerHTML = html;
+        }
+
+        // ============================================
+        // DETTAGLIO E MODIFICA STATO
+        // ============================================
+        
+        function showDetails(id) {
+            const immobile = immobili.find(i => i.id === id);
+            if (!immobile) return;
+            
+            currentEditId = id;
+            const zonaInfo = ZONE[immobile.zona];
+            const gruppoInfo = zonaInfo.gruppi.find(g => g.nome === immobile.gruppo);
+            const gruppoIcon = gruppoInfo ? gruppoInfo.icon : '📦';
+            
+            // Calcola durata
+            const durata = immobile.statoData ? calcolaDurata(immobile.statoData) : null;
+            const dataFormattata = immobile.statoData ? formatDataItaliana(immobile.statoData) : 'N/D';
+            
+            document.getElementById('modalTitle').textContent = immobile.nome;
+            document.getElementById('modalBody').innerHTML = `
+                <div class="detail-row">
+                    <div class="detail-label">Immobile</div>
+                    <div class="detail-value">${immobile.nome}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Zona</div>
+                    <div class="detail-value">${zonaInfo.icon} ${zonaInfo.nome}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Gruppo</div>
+                    <div class="detail-value">${gruppoIcon} ${immobile.gruppo}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Stato Attuale</div>
+                    <div class="current-status ${immobile.stato}">${STATI[immobile.stato].icon} ${STATI[immobile.stato].label}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">${STATI[immobile.stato].label} dal</div>
+                    <div class="detail-value">${dataFormattata}</div>
+                </div>
+                ${durata ? `
+                <div class="detail-row">
+                    <div class="detail-label">Durata</div>
+                    <div class="detail-value durata-highlight">da ${durata}</div>
+                </div>
+                ` : ''}
+                
+                <button class="btn-update-status" onclick="toggleStatusOptions()">
+                    🔄 Aggiorna Stato
+                </button>
+                
+                <div class="status-options" id="statusOptions">
+                    ${Object.entries(STATI).map(([key, value]) => `
+                        <button class="status-option ${key}" onclick="updateStatus('${id}', '${key}')">
+                            <span class="status-icon ${key}">${value.icon}</span>
+                            ${value.label}
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+            
+            document.getElementById('detailModal').style.display = 'block';
+        }
+
+        function toggleStatusOptions() {
+            const options = document.getElementById('statusOptions');
+            options.classList.toggle('show');
+        }
+
+        async function updateStatus(id, newStatus) {
+            const immobile = immobili.find(i => i.id === id);
+            if (!immobile) return;
+            
+            const oldStatus = immobile.stato;
+            
+            if (oldStatus === newStatus) {
+                closeModal('detailModal');
+                return;
+            }
+            
+            const timestamp = new Date().toISOString();
+            
+            // Aggiorna stato e data localmente subito per feedback immediato
+            immobile.stato = newStatus;
+            immobile.statoData = timestamp;
+            
+            // Aggiungi al registro locale
+            registro.unshift({
+                timestamp: timestamp,
+                immobile: immobile.nome,
+                zona: immobile.zona,
+                oldStatus: oldStatus,
+                newStatus: newStatus
+            });
+            
+            saveData();
+            renderAll();
+            closeModal('detailModal');
+            
+            // Salva su Google Sheets in background (usa GET per evitare CORS)
+            try {
+                const params = new URLSearchParams({
+                    action: 'updateStato',
+                    id: id,
+                    newStato: newStatus,
+                    oldStato: oldStatus,
+                    immobileNome: immobile.nome,
+                    zona: immobile.zona
+                });
+                
+                const response = await fetch(`${WEBAPP_URL}?${params.toString()}`);
+                const result = await response.json();
+                
+                if (result && result.success) {
+                    // Aggiorna statoData con quello del server
+                    if (result.statoData) {
+                        immobile.statoData = result.statoData;
+                        saveData();
+                    }
+                    showFeedback('Salvato su Google!');
+                    console.log('✅ Stato salvato su Google Sheets');
+                } else {
+                    console.error('Errore salvataggio:', result);
+                    showFeedback('Salvato solo in locale', true);
+                }
+            } catch (error) {
+                console.error('Errore salvataggio su Google:', error);
+                showFeedback('Salvato solo in locale', true);
+            }
+        }
+
+        // ============================================
+        // CAMBIO ZONA
+        // ============================================
+        
+        function switchZona(zona) {
+            if (zona === currentZona) return;
+            
+            currentZona = zona;
+            currentStatoFilter = null;
+            
+            // Aggiorna tab attivi
+            document.getElementById('tabTucidide').classList.remove('active');
+            document.getElementById('tabMalaga').classList.remove('active');
+            document.getElementById('tab' + zona.charAt(0).toUpperCase() + zona.slice(1)).classList.add('active');
+            
+            // Pulisci ricerca e filtro
+            document.getElementById('searchInput').value = '';
+            document.getElementById('clearSearchBtn').style.display = 'none';
+            updateStatItemsActive();
+            
+            // Re-render tutto
+            renderAll();
+        }
+
+        // ============================================
+        // REGISTRO
+        // ============================================
+        
+        function openRegistro() {
+            const list = document.getElementById('registroList');
+            const zonaCorrente = ZONE[currentZona];
+            
+            // Filtra registro per zona corrente
+            const registroZona = registro.filter(r => r.zona === currentZona);
+            
+            // Aggiorna titolo modal con zona
+            document.querySelector('#registroModal .modal-title').textContent = `📋 Registro ${zonaCorrente.icon} ${zonaCorrente.nome}`;
+            
+            if (registroZona.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        <p>Nessuna modifica registrata per ${zonaCorrente.nome}</p>
+                    </div>
+                `;
+            } else {
+                list.innerHTML = registroZona.map(r => {
+                    const date = new Date(r.timestamp);
+                    const dateStr = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth()+1).toString().padStart(2, '0')}/${date.getFullYear()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+                    
+                    return `
+                        <div class="registro-item">
+                            <div class="registro-header">
+                                <span class="registro-immobile">${r.immobile}</span>
+                                <span class="registro-data">${dateStr}</span>
+                            </div>
+                            <div class="registro-cambio">
+                                <span class="registro-stato ${r.oldStatus}">${STATI[r.oldStatus].icon} ${STATI[r.oldStatus].label}</span>
+                                <span class="registro-arrow">➜</span>
+                                <span class="registro-stato ${r.newStatus}">${STATI[r.newStatus].icon} ${STATI[r.newStatus].label}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            document.getElementById('registroModal').style.display = 'block';
+        }
+
+        // ============================================
+        // RICERCA
+        // ============================================
+        
+        function filterImmobili() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            
+            if (searchTerm === '') {
+                renderImmobili();
+                return;
+            }
+            
+            // Resetta filtro stato quando si cerca
+            currentStatoFilter = null;
+            updateStatItemsActive();
+            
+            // Filtra per zona corrente E per termine di ricerca
+            const filtered = immobili.filter(i => 
+                i.zona === currentZona && (
+                    i.nome.toLowerCase().includes(searchTerm) ||
+                    i.gruppo.toLowerCase().includes(searchTerm) ||
+                    STATI[i.stato].label.toLowerCase().includes(searchTerm)
+                )
+            );
+            
+            renderImmobili(filtered);
+        }
+
+        function filterByStato(stato) {
+            // Se clicco sullo stesso stato, rimuovo il filtro
+            if (currentStatoFilter === stato) {
+                currentStatoFilter = null;
+                document.getElementById('searchInput').value = '';
+                document.getElementById('clearSearchBtn').style.display = 'none';
+            } else {
+                currentStatoFilter = stato;
+                document.getElementById('searchInput').value = '';
+                document.getElementById('clearSearchBtn').style.display = 'none';
+            }
+            
+            updateStatItemsActive();
+            
+            if (currentStatoFilter) {
+                const filtered = immobili.filter(i => 
+                    i.zona === currentZona && i.stato === currentStatoFilter
+                );
+                renderImmobili(filtered);
+            } else {
+                renderImmobili();
+            }
+        }
+
+        function updateStatItemsActive() {
+            // Rimuovi active da tutti
+            document.querySelectorAll('.stat-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Aggiungi active a quello selezionato
+            if (currentStatoFilter) {
+                const activeItem = document.querySelector(`.stat-item.${currentStatoFilter}`);
+                if (activeItem) {
+                    activeItem.classList.add('active');
+                }
+            }
+        }
+
+        function toggleClearButton() {
+            const searchInput = document.getElementById('searchInput');
+            const clearBtn = document.getElementById('clearSearchBtn');
+            clearBtn.style.display = searchInput.value.length > 0 ? 'flex' : 'none';
+        }
+
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('clearSearchBtn').style.display = 'none';
+            currentStatoFilter = null;
+            updateStatItemsActive();
+            renderImmobili();
+        }
+
+        // ============================================
+        // UTILITÀ
+        // ============================================
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            currentEditId = null;
+        }
+
+        function showFeedback(message = 'Stato aggiornato!', isError = false) {
+            const feedback = document.getElementById('syncFeedback');
+            const icon = feedback.querySelector('.icon');
+            const msg = feedback.querySelector('.message');
+            
+            msg.textContent = message;
+            
+            if (isError) {
+                icon.textContent = '⚠️';
+                icon.style.background = '#ff9800';
+                feedback.style.borderColor = '#ff9800';
+            } else {
+                icon.textContent = '✅';
+                icon.style.background = '#4CAF50';
+                feedback.style.borderColor = '#4CAF50';
+            }
+            
+            feedback.classList.add('show');
+            setTimeout(() => {
+                feedback.classList.remove('show');
+            }, 1500);
+        }
+
+        // Chiudi modal cliccando fuori
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+                currentEditId = null;
+            }
+        }
+
+        // ============================================
+        // INIT
+        // ============================================
+        
+        // Inizializza con dati locali
+        initImmobili();
+        renderAll();
+        
+        // Prova a sincronizzare e caricare da Google Sheets
+        syncAndLoad().then(success => {
+            if (!success) {
+                console.log('⚠️ Usando dati locali (Google Sheets non disponibile)');
+            }
+        });
+    </script>
+</body>
+</html>
